@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaFlow Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Phone Frame Wrapper */
+        .phone-container {
+            width: 360px;
+            height: 740px;
+            background-color: #000000;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 4px solid #333;
+        }
+
+        /* Dynamic Island / Notch */
+        .notch {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 30px;
+            background-color: #000000;
+            border-radius: 20px;
+            z-index: 10;
+        }
+
+        /* Screen Content */
+        .screen {
+            flex: 1;
+            background-color: #e0e0e0;
+            border-radius: 28px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Hide Scrollbar */
+        .screen::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: #2b6cb0;
+            color: #ffffff;
+            padding: 45px 16px 16px 16px; /* Extra top padding to clear notch */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .header-left, .header-right {
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-left:hover, .header-right:hover {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+
+        .header-center {
+            text-align: center;
+        }
+
+        .header-center h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .header-center p {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .notification-badge {
+            position: relative;
+        }
+
+        .notification-badge::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background-color: #f56565;
+            border-radius: 50%;
+            border: 1px solid #2b6cb0;
+        }
+
+        /* Dashboard Body */
+        .content {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .content h2 {
+            font-size: 18px;
+            color: #1a202c;
+            font-weight: 600;
+            margin-bottom: -4px;
+        }
+
+        /* Grid Layout for Metrics */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        /* Metric Cards */
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 105px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .card-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .card-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-top: 8px;
+        }
+
+        .card-value span {
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 2px;
+        }
+
+        .card-trend {
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            margin-top: 4px;
+        }
+
+        /* Card Specific Colors */
+        .produced-icon { background-color: #e0f2fe; color: #38bdf8; }
+        .stored-icon { background-color: #dcfce7; color: #4ade80; }
+        .consumer-icon { background-color: #f3e8ff; color: #a855f7; }
+        .alerts-icon { background-color: #ffedd5; color: #f97316; }
+
+        .trend-up-gray { color: #718096; }
+        .trend-up-green { color: #22c55e; }
+        
+        .view-all-btn {
+            font-size: 11px;
+            font-weight: 700;
+            color: #e53e3e;
+            text-decoration: none;
+            margin-top: auto;
+            transition: color 0.2s;
+        }
+        .view-all-btn:hover {
+            color: #c53030;
+            text-decoration: underline;
+        }
+
+        /* System Overview Map Card */
+        .map-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+        }
+
+        .map-card:hover {
+            transform: scale(1.01);
+        }
+
+        .map-header {
+            padding: 14px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 200px;
+            background-color: #edf2f7;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Bottom Home Indicator Bar */
+        .home-indicator-container {
+            height: 30px;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 8px;
+        }
+
+        .home-indicator {
+            width: 120px;
+            height: 5px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .home-indicator::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            background-color: #000000;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <div class="notch"></div>
+
+        <div class="screen">
+            
+            <header class="header">
+                <div class="header-left">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+                <div class="header-center">
+                    <h1>AquaFlow</h1>
+                    <p>Water Supply System</p>
+                </div>
+                <div class="header-right notification-badge">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+            </header>
+
+            <main class="content">
+                <h2>Dashboard</h2>
+
+                <div class="grid-container">
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon produced-icon">
+                                <i class="fa-solid fa-droplet"></i>
+                            </div>
+                            <span class="card-title">Produced</span>
+                        </div>
+                        <div class="card-value">124.8<span>ML</span></div>
+                        <div class="card-trend trend-up-gray">
+                            <i class="fa-solid fa-arrow-up"></i> 8.5%
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon stored-icon">
+                                <i class="fa-solid fa-water"></i>
+                            </div>
+                            <span class="card-title">Stored</span>
+                        </div>
+                        <div class="card-value">342.6<span>ML</span></div>
+                        <div class="card-trend trend-up-green">
+                            <i class="fa-solid fa-arrow-up"></i> 8.5%
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon consumer-icon">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <span class="card-title">Consumer</span>
+                        </div>
+                        <div class="card-value">28,543</div>
+                        <div class="card-trend trend-up-green">
+                            <i class="fa-solid fa-arrow-up"></i> 2.1%
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon alerts-icon">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <span class="card-title">Alerts</span>
+                        </div>
+                        <div class="card-value">3</div>
+                        <a href="#" class="view-all-btn">View all</a>
+                    </div>
+
+                </div>
+
+                <div class="map-card">
+    <div class="map-header">System Overview</div>
+    <div class="map-container">
+        <img src="c:\Users\Acer Aspire 3\Pictures\Screenshots\Screenshot 2026-06-14 214016.png" alt="System Map Overview" class="map-img">
+    </div>
+</div>
+
+            </main>
+
+            <div class="home-indicator-container">
+                <div class="home-indicator"></div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
